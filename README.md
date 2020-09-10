@@ -8,3 +8,5 @@ Feel free to copy, modify and use as you want. The script does what it's suppose
 
 # Prerequisites, Features & Usage:
 See my original post: https://forums.slimdevices.com/showthread.php?108498-Announce-GRUVI-generate-random-URLs_for-viewing-image
+
+2020.09.10: Added possibility to choose multiple image folders with internal weighting of selections from each folder.
