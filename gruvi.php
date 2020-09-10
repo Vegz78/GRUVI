@@ -35,10 +35,20 @@
 $LIST_SIZE = 60; //Number of random images to be processed and  included in the image URL list
 $FILE_AGE_MAX = 2500; //Time in minutes before a random image file pointed to in the list is changed
 $CAPTIONS = 1; //0 = Captions OFF, 1 = Captions ON
-$IMG_SOURCE = '/mnt/Some_path_to_your_images'; //Path to original large image files 
+$IMG_SOURCE = array("/mnt/Some_path_to_your_images1", "/mnt/Some_path_to_your_images2"); //Path to original image files 
+$SOURCE_WEIGHT = array(0.3, 0.7);  //Relative weights between above paths
 
-$URL_ROOT = 'http://192.168.x.x/'; //Host server address
+$URL_ROOT = 'http://192.168.x.y/'; //Host server address
 $IMAGE_ROOT = 'sbtouch_img/'; //Storage folder for images in the www-directory
+
+
+//Check consistency between number of sources and weights, exit otherwise
+$noOfSources = count($IMG_SOURCE);
+$noOfWeights = count($SOURCE_WEIGHT);
+$sumOfWeights = array_sum($SOURCE_WEIGHT);
+if ($noOfSources != $noOfWeights || $sumOfWeights != 1) {
+	exit("Inconsistency between number of sources and weights.\n");
+}
 
 
 //Identify player type and set corresponding player specific variables
@@ -109,17 +119,34 @@ fclose($fp);
 readfile($FILE_NAME); 
 
 
-//Number of image and file operations until the images and the image URL list is ready
+//Distribute weighted number of images pr. source by use of the Largest Remainder Method
 $fileArraySize = count($fileArray);
+$sourceDist = array();
+for ($i=0; $i<$noOfSources; $i++) {
+	$sourceDist[] = floor($SOURCE_WEIGHT[$i]*$fileArraySize);
+}
+arsort($sourceDist);
+$sourceSum = 0;
+$index = array();
+foreach ($sourceDist as $key => $val) {
+	$index[] = $key;
+	$sourceSum += $val;
+}
+$sourceDiff = $fileArraySize-$sourceSum;
+for ($i=0; $i<$sourceDiff; $i++) {
+	$sourceDist[$index[$i]] += 1;
+}
 
 
 //Start image and file operations if any images are missing or old
+$fileNameIndex = 0;
 if ($fileArraySize >=1) {
-
+for ($x=0; $x<$noOfSources;$x++){
 
 	//Traverse directory and subdirectories recursively and populate array with filenames
+	$fileArraySize = $sourceDist[$x];
 	$fileNameArray = array();
-	$Directory = new RecursiveDirectoryIterator($IMG_SOURCE);
+	$Directory = new RecursiveDirectoryIterator($IMG_SOURCE[$x]);
 	$Iterator = new RecursiveIteratorIterator($Directory);
 	$Regex = new RegexIterator($Iterator, '/^.+(.jpe?g)$/i', RecursiveRegexIterator::GET_MATCH);
 
@@ -135,22 +162,24 @@ if ($fileArraySize >=1) {
 
 		//Captions ON
 		if ($CAPTIONS == 1) {
-			$exploded = explode("/", $fileNameArray[$i]);
+			$exploded = explode("/", $fileNameArray[$fileNameIndex]);
 			$event = $exploded[count($exploded)-2]; //Makes parent directory available as string for caption text
 			$fileName = $exploded[count($exploded)-1];  //Makes file name available as string for caption text
 
 			//exec('/usr/bin/convert \\( ' . escapeshellarg($fileNameArray[$i]) . ' -auto-orient -background none -resize 480x480 -gravity center -extent 480x272 \\) \\( -background \'#0005\' -fill white -gravity west -size 480x25 -pointsize 11 caption:' . escapeshellarg($fileName. "\n") . escapeshellarg($event) . ' \\) -gravity south -composite ' . escapeshellarg($IMAGE_ROOT) . escapeshellarg($fileArray[$i]) . escapeshellarg($FILE_SUFFIX) . ' >> dev/null 2>&1 &');
-			fwrite($fp, '/usr/bin/convert \\( \'' . $fileNameArray[$i] . '\' -auto-orient -background none -resize ' . escapeshellarg($X_WIDTH . 'x' . $X_WIDTH) . ' -gravity center -extent ' . escapeshellarg($X_WIDTH . 'x' . $Y_HEIGHT) . ' \\) \\( -background \'#0005\' -fill white -gravity west -size ' . escapeshellarg($X_WIDTH . 'x' . $C_HEIGHT) . ' -pointsize ' . escapeshellarg($P_SIZE) . ' caption:\'' . $fileName . '\n' . $event . '\' \\) -gravity south -composite ' . escapeshellarg($IMAGE_ROOT) . escapeshellarg($fileArray[$i]) . escapeshellarg($FILE_SUFFIX) . "\n");
+			fwrite($fp, '/usr/bin/convert \\( \'' . $fileNameArray[$fileNameIndex] . '\' -auto-orient -background none -resize ' . escapeshellarg($X_WIDTH . 'x' . $X_WIDTH) . ' -gravity center -extent ' . escapeshellarg($X_WIDTH . 'x' . $Y_HEIGHT) . ' \\) \\( -background \'#0005\' -fill white -gravity west -size ' . escapeshellarg($X_WIDTH . 'x' . $C_HEIGHT) . ' -pointsize ' . escapeshellarg($P_SIZE) . ' caption:\'' . $fileName . '\n' . $event . '\' \\) -gravity south -composite ' . escapeshellarg($IMAGE_ROOT) . escapeshellarg($fileArray[$fileNameIndex]) . escapeshellarg($FILE_SUFFIX) . "\n");
 		}
 
 		//Captions OFF
 		else {
-			fwrite($fp, '/usr/bin/convert \'' . $fileNameArray[$i] . '\' -auto-orient -background none -resize ' . escapeshellarg($X_WIDTH . 'x' . $X_WIDTH) . ' -gravity center -extent ' . escapeshellarg($X_WIDTH . 'x' . $Y_HEIGHT) . ' ' . escapeshellarg($IMAGE_ROOT) . escapeshellarg($fileArray[$i]) . escapeshellarg($FILE_SUFFIX) . "\n");
+			fwrite($fp, '/usr/bin/convert \'' . $fileNameArray[$fileNameIndex] . '\' -auto-orient -background none -resize ' . escapeshellarg($X_WIDTH . 'x' . $X_WIDTH) . ' -gravity center -extent ' . escapeshellarg($X_WIDTH . 'x' . $Y_HEIGHT) . ' ' . escapeshellarg($IMAGE_ROOT) . escapeshellarg($fileArray[$fileNameIndex]) . escapeshellarg($FILE_SUFFIX) . "\n");
 		}
+		$fileNameIndex++;
 	}
 	fclose($fp);
 	exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
 	exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . ' >> /dev/null 2>&1 &');
+}
 }
 
 
