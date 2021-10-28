@@ -1,33 +1,40 @@
 <?php 
 
-
 /*  Random URL image file list generator for the Image Viewer app on the Squeezebox Touch, Radio etc. with:
-	-Random selection of files and random shuffle of the lists between every call to this PHP-file
+	-Random selection of files and random shuffle of the lists between every call to this PHP-file on
+	 independent web servers, ,or with periodic cron jobs on the LMS internal web server.
 	-Locally cached copies of the images with reduced sizes to minimize load on the LMS, players and network
-	-Image files hosted on a web server of your chosing and fittet to the players' screens
+	-Image files hosted on a web server of your chosing and fittet to the players' screen sizes
 	-Choice between images with or without capitons
 	-Choice of number of cached files and expiry time for reload of new batches of random images
+	-Added support for multiple image folders with internal probability weighing for the random image selection
+	 and with the choice between serial and parallel processing of the ImageMagick conversions between folders.
 
-    Totally independent from the LMS server etc. No more versions or plugins conflicts, no more spinning
-    disks on the NAS, heavy machinery required to rund 24/7 etc... ;-)
+    Choice between total independence from the LMS server on any web server, or run in LMS internal web server. 
+
+    No more versions or plugins conflicts, no more spinning
+    disks on the NAS, heavy machinery required to run 24/7 etc... ;-)
 
     This was my very first complete PHP-script ever, so sorry for the bad and ugly coding, without
-    any error or exception handling. It barely does what it's supposed to do, but gets the jobb done
+    any error or exception handling. It barely does what it's supposed to do, but gets the job done
     for the time being, if you can get it to work. I'm on the forum from time to time, but don't have
     the resources to provide any reliable support. 
 
-    Feel free to copy and improve as you feel fit! I certainly did a lot of copying from a lot of
-    amazing resources and competent and sharing people on the web. So much research and copying 
+    Feel free to copy and improve as you feel fit! I did so much research and copying myself,
     that I don't remember all the people I should be thanking.
 
 
-    !! Anyways, a special thanks to the primus motors on the Squeezebox community forum who keeps both
-    the best audio community and the best music server/player ecosystem ever still alive and kicking!!
+    !! Special thanks to the primus motors on the Squeezebox community forum who keeps both the
+    best audio community and the best music server/player ecosystem ever still alive and kicking!!
 
     Nice also if any suggestions for improvements to this script were posted back on this forum thread!
 
 
-    by vegz78... */
+    by vegz78...
+
+    Originally posted in this Squeezebox forum thread:
+    https://forums.slimdevices.com/showthread.php?108498-Announce-GRUVI-generate-random-URLs_for-viewing-images
+*/
 
 
 
@@ -35,11 +42,13 @@
 $LIST_SIZE = 60; //Number of random images to be processed and  included in the image URL list
 $FILE_AGE_MAX = 2500; //Time in minutes before a random image file pointed to in the list is changed
 $CAPTIONS = 1; //0 = Captions OFF, 1 = Captions ON
-$IMG_SOURCE = array("/mnt/Some_path_to_your_images1", "/mnt/Some_path_to_your_images2"); //Path to original image files 
-$SOURCE_WEIGHT = array(0.3, 0.7);  //Relative weights between above paths
+$IMG_SOURCE = array("/mnt/Path_to_image_folder1", "/mnt/Path_to_image_folder2"); //Path to one or more image folders
+$SOURCE_WEIGHT = array(0.3, 0.7); //Relative weights between the above chosen image folders
 
-$URL_ROOT = 'http://192.168.x.y/'; //Host server address
-$IMAGE_ROOT = 'sbtouch_img/'; //Storage folder for images in the www-directory
+$URL_ROOT = 'http://192.168.x.y:9000/html/'; //Host web server address on internal LMS web server
+//$URL_ROOT = 'http://192.168.x.y/'; //Host web server address on most independent web serversr
+$IMAGE_ROOT = 'gruvi_img/'; //Storage folder for images in the www-directory
+$PARALLEL_CONVERT = False;  //If multiple $IMG_SOURCEs, each can be converted in parallel, but takes a toll on weaker e.g. RPi servers
 
 
 //Check consistency between number of sources and weights, exit otherwise
@@ -53,18 +62,22 @@ if ($noOfSources != $noOfWeights || $sumOfWeights != 1) {
 
 //Identify player type and set corresponding player specific variables
 $isTouch = false;
-$FILE_NAME = 'sbradio.lst';
+$FILE_NAME = 'sbradio.txt';
 $FILE_SUFFIX = '.jpg';
 $BEGIN_NAME = '.radio_start';
 $X_WIDTH = 320;
 $Y_HEIGHT = 240;
 $C_HEIGHT = 22;
 $P_SIZE = 10;
-if(isset($_SERVER['HTTP_USER_AGENT'])) { 
-	$playerType = $_SERVER['HTTP_USER_AGENT']; //Identifier for the different player types
+if(isset($_SERVER['HTTP_USER_AGENT']) || isset($argv[1]) && $argv[1] == "Touch") {
+	if(isset($_SERVER['HTTP_USER_AGENT'])) {
+		$playerType = $_SERVER['HTTP_USER_AGENT']; //Identifier for the different player types
+	} elseif(isset($argv[1]) && $argv[1] == "Touch") {
+		$playerType = "fab4";
+	}
 	if (strpos($playerType, 'fab4') !== false) {
 		$isTouch = true; //TRUE if Squeezebox Touch, FALSE otherwise
-		$FILE_NAME = 'sbtouch.lst'; //URL list file name for the Touch
+		$FILE_NAME = 'sbtouch.txt'; //URL list file name for the Touch
 		$FILE_SUFFIX = '_fab4.jpg'; //Image file suffix for the Touch
 		$BEGIN_NAME = '.touch_start';
 		$X_WIDTH = 480;
@@ -141,6 +154,9 @@ for ($i=0; $i<$sourceDiff; $i++) {
 //Start image and file operations if any images are missing or old
 $fileNameIndex = 0;
 if ($fileArraySize >=1) {
+if (!$PARALLEL_CONVERT) {
+	$fp = fopen ($IMAGE_ROOT . $BEGIN_NAME, 'w');
+}
 for ($x=0; $x<$noOfSources;$x++){
 
 	//Traverse directory and subdirectories recursively and populate array with filenames
@@ -157,7 +173,9 @@ for ($x=0; $x<$noOfSources;$x++){
 
 	//Shuffle the array, and generate and run shell script to extract and resize the needed number of random new image files
 	shuffle($fileNameArray);
-	$fp = fopen ($IMAGE_ROOT . $BEGIN_NAME, 'w');
+	if ($PARALLEL_CONVERT) {
+		$fp = fopen ($IMAGE_ROOT . $BEGIN_NAME, 'w');
+	}
 	for ($i = 0; $i <= $fileArraySize-1; $i++) {
 
 		//Captions ON
@@ -176,6 +194,13 @@ for ($x=0; $x<$noOfSources;$x++){
 		}
 		$fileNameIndex++;
 	}
+	if ($PARALLEL_CONVERT) {
+		fclose($fp);
+		exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
+		exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . ' >> /dev/null 2>&1 &');
+	}
+}
+if (!$PARALLEL_CONVERT) {
 	fclose($fp);
 	exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
 	exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . ' >> /dev/null 2>&1 &');
