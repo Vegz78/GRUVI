@@ -40,14 +40,15 @@
 
 //Global variables
 $LIST_SIZE = 60; //Number of random images to be processed and  included in the image URL list
-$FILE_AGE_MAX = 2500; //Time in minutes before a random image file pointed to in the list is changed
-$CAPTIONS = 1; //0 = Captions OFF, 1 = Captions ON
+$FILE_AGE_MAX = 2880; //Time in minutes before a random image file pointed to in the list is changed
+$CAPTIONS = True; //True = Captions ON, False = Captions OFF
+$GRUVI_LOGO = True; //True = GRUVI logo as first image = ON, False = GRUVI logo OFF
 $IMG_SOURCE = array("/mnt/Path_to_image_folder1", "/mnt/Path_to_image_folder2"); //Path to one or more image folders
 $SOURCE_WEIGHT = array(0.3, 0.7); //Relative weights between the above chosen image folders
 
 $URL_ROOT = 'http://192.168.x.y:9000/html/'; //Host web server address on internal LMS web server
 //$URL_ROOT = 'http://192.168.x.y/'; //Host web server address on most independent web serversr
-$IMAGE_ROOT = 'gruvi_img/'; //Storage folder for images in the www-directory
+$IMAGE_ROOT = 'gruvi_img/'; //Storage folder for converted images in the www-directory
 $PARALLEL_CONVERT = False;  //If multiple $IMG_SOURCEs, each can be converted in parallel, but takes a toll on weaker e.g. RPi servers
 
 
@@ -109,6 +110,7 @@ if (!file_exists("{$IMAGE_ROOT}1{$FILE_SUFFIX}")) {
 		fwrite($fp, "cp {$IMAGE_ROOT}1{$FILE_SUFFIX} {$IMAGE_ROOT}{$i}{$FILE_SUFFIX}\n");
 		$fileArray[] = $i;
 	}
+	fwrite($fp, "cp {$IMAGE_ROOT}1{$FILE_SUFFIX} {$IMAGE_ROOT}gruvi_logo{$FILE_SUFFIX}\n");
 	fclose($fp);
 	exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
 	exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . ' >> /dev/null 2>&1 &');
@@ -122,14 +124,24 @@ for ($i = 1; $i <=  $LIST_SIZE; $i++) {
 }
 shuffle($indexList); //For random image viewer starts
 $fp = fopen($FILE_NAME, 'w');
+if ($GRUVI_LOGO) {
+	fwrite($fp, $URL_ROOT . $IMAGE_ROOT . "gruvi_logo" . $FILE_SUFFIX ."\n");
+}
 for ($i = 0; $i <=  $LIST_SIZE-1; $i++) {
 	fwrite($fp, $URL_ROOT . $IMAGE_ROOT . $indexList[$i] . $FILE_SUFFIX ."\n");
 }
 fclose($fp);
 
 
-//Send image URL file to Image Viewer
-readfile($FILE_NAME); 
+//Send image URL file to Image Viewer via gruvi.php HTML output
+//Flush output buffer to allow web server to show URL list before gruvi.php is finished
+//Solution inspired by https://stackoverflow.com/a/14469376/12802435
+readfile($FILE_NAME);
+if (ob_get_contents()) {
+	ob_end_flush();
+}
+flush();
+session_write_close();
 
 
 //Distribute weighted number of images pr. source by use of the Largest Remainder Method
@@ -154,9 +166,19 @@ for ($i=0; $i<$sourceDiff; $i++) {
 //Start image and file operations if any images are missing or old
 $fileNameIndex = 0;
 if ($fileArraySize >=1) {
+
+//Check if conversions from a previous run of gruvi.php is already running, exit to prevent system overload
+//Solution borrowed from https://www.exakat.io/en/prevent-multiple-php-scripts-at-the-same-time/
+$lockFolder = $IMAGE_ROOT . 'gruvi.lock';
+if (@mkdir($lockFolder, 0700)) {
+}else {
+	exit();
+}
+//If parallel conversion not allowed, open file once
 if (!$PARALLEL_CONVERT) {
 	$fp = fopen ($IMAGE_ROOT . $BEGIN_NAME, 'w');
 }
+//For each image folder that needs processing
 for ($x=0; $x<$noOfSources;$x++){
 
 	//Traverse directory and subdirectories recursively and populate array with filenames
@@ -173,13 +195,15 @@ for ($x=0; $x<$noOfSources;$x++){
 
 	//Shuffle the array, and generate and run shell script to extract and resize the needed number of random new image files
 	shuffle($fileNameArray);
+	//If parallel conversion allowed, open file for every image folder
 	if ($PARALLEL_CONVERT) {
 		$fp = fopen ($IMAGE_ROOT . $BEGIN_NAME, 'w');
 	}
+	//For each image file that needs processing in each folder
 	for ($i = 0; $i <= $fileArraySize-1; $i++) {
 
 		//Captions ON
-		if ($CAPTIONS == 1) {
+		if ($CAPTIONS) {
 			$exploded = explode("/", $fileNameArray[$fileNameIndex]);
 			$event = $exploded[count($exploded)-2]; //Makes parent directory available as string for caption text
 			$fileName = $exploded[count($exploded)-1];  //Makes file name available as string for caption text
@@ -194,12 +218,18 @@ for ($x=0; $x<$noOfSources;$x++){
 		}
 		$fileNameIndex++;
 	}
+	//Remove lock folder
+	if ($x == ($noOfSources - 1)) {
+		fwrite($fp, 'rmdir ' . escapeshellarg($lockFolder) . "\n");
+	}
+	//If parallel conversion is allowed, process each folder immediately
 	if ($PARALLEL_CONVERT) {
 		fclose($fp);
 		exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
 		exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . ' >> /dev/null 2>&1 &');
 	}
 }
+//If parallel conversion is not allowed, process when all folders are finished
 if (!$PARALLEL_CONVERT) {
 	fclose($fp);
 	exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
