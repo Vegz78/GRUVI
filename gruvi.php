@@ -44,7 +44,8 @@ $FILE_AGE_MAX = 2880; //Time in minutes before a random image file pointed to in
 $CAPTIONS = True; //True = Captions ON, False = Captions OFF
 $GRUVI_LOGO = True; //True = GRUVI logo as first image = ON, False = GRUVI logo OFF
 $IMG_SOURCE = array("/mnt/Path_to_image_folder1", "/mnt/Path_to_image_folder2"); //Path to one or more image folders
-$SOURCE_WEIGHT = array(0.3, 0.7); //Relative weights between the above chosen image folders
+$SOURCE_WEIGHT = array(0.3, 0.7); //Relative weights between the above chosen image folders, must be as many weights as the
+                                  //number of folders above and add up to 1
 
 $URL_ROOT = 'http://192.168.x.y:9000/html/'; //Host web server address on internal LMS web server
 //$URL_ROOT = 'http://192.168.x.y/'; //Host web server address on most independent web serversr
@@ -186,7 +187,7 @@ for ($x=0; $x<$noOfSources;$x++){
 	$fileNameArray = array();
 	$Directory = new RecursiveDirectoryIterator($IMG_SOURCE[$x]);
 	$Iterator = new RecursiveIteratorIterator($Directory);
-	$Regex = new RegexIterator($Iterator, '/^.+(.jpe?g)$/i', RecursiveRegexIterator::GET_MATCH);
+	$Regex = new RegexIterator($Iterator, '/^(?!._).+(.jpe?g)$/i', RecursiveRegexIterator::GET_MATCH);
 
 	foreach($Regex as $name => $Regex) {
 		$fileNameArray[] = $name;
