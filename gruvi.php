@@ -90,6 +90,14 @@ if(isset($_SERVER['HTTP_USER_AGENT']) || isset($argv[1]) && $argv[1] == "Touch")
 }
 
 
+//Check whether lock file has not been cleanly deleted on any previous runs, perhaps an interrupted run
+$lockFolder = $IMAGE_ROOT . 'gruvi.lock';
+$safeTime = 15;
+if (is_dir($lockFolder) && (time() - filemtime($lockFolder))/60 > $safeTime) {
+        rmdir($lockFolder);
+}
+
+
 //Check if the local optimized copies of files exist or must be created OR if they are too old and must be replaced with new images OR
 //if they're too small, which is assumed to be a Gruvi fill-images from first run.
 $fileArray = array();  //Array of files which should be updated or created
