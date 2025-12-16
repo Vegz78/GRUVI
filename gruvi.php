@@ -94,7 +94,7 @@ if(isset($_SERVER['HTTP_USER_AGENT']) || isset($argv[1]) && $argv[1] == "Touch")
 $lockFolder = $IMAGE_ROOT . 'gruvi.lock';
 $safeTime = 15;
 if (is_dir($lockFolder) && (time() - filemtime($lockFolder))/60 > $safeTime) {
-		rmdir($lockFolder);
+	rmdir($lockFolder);
 }
 
 
