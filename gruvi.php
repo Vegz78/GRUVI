@@ -43,14 +43,14 @@ $LIST_SIZE = 60; //Number of random images to be processed and  included in the 
 $FILE_AGE_MAX = 2880; //Time in minutes before a random image file pointed to in the list is changed
 $CAPTIONS = True; //True = Captions ON, False = Captions OFF
 $GRUVI_LOGO = True; //True = GRUVI logo as first image = ON, False = GRUVI logo OFF
-$IMG_SOURCE = array("/mnt/Path_to_image_folder1", "/mnt/Path_to_image_folder2"); //Path to one or more image folders
-$SOURCE_WEIGHT = array(0.3, 0.7); //Relative weights between the above chosen image folders, must be as many weights as the
-                                  //number of folders above and add up to 1
-
+$IMG_SOURCE = array("Path_to_image_folder1", "Path_to_image_folder2"); //Path to one or more image folders
+$SOURCE_WEIGHT = array(0.3, 0.7);	//Relative weights between the above chosen image folders. There must be as many 
+									//weights as the number of folders in the $IMG_SOURCE above and add up to 1
 $URL_ROOT = 'http://192.168.x.y:9000/html/'; //Host web server address on internal LMS web server
-//$URL_ROOT = 'http://192.168.x.y/'; //Host web server address on most independent web serversr
-$IMAGE_ROOT = 'gruvi_img/'; //Storage folder for converted images in the www-directory
-$PARALLEL_CONVERT = False;  //If multiple $IMG_SOURCEs, each can be converted in parallel, but takes a toll on weaker e.g. RPi servers
+//$URL_ROOT = 'http://192.168.x.y/'; //Host web server address on most independent web servers
+$IMAGE_ROOT = 'gruvi_img' . DIRECTORY_SEPARATOR; //Storage folder for converted images in the www-directory
+$PARALLEL_CONVERT = False;  //If multiple $IMG_SOURCEs, each can be converted in parallel, but takes a toll on
+							//weaker e.g. RPi servers
 
 
 //Check consistency between number of sources and weights, exit otherwise
