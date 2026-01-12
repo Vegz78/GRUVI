@@ -1,14 +1,15 @@
 # GRUVI 
 ### (.generate.random.URLs_for.viewing.images.)
-Random URL image file list generator for the Image Viewer app(Photo frame/Screensaver) on the Logitech/Squeezebox Touch, Radio etc.
+Image file URL list generator for displaying a list of image files on a web server or for screensaver/slideshow of random images via the Image Viewer app(photo frame) on the Squeezebox/Logitech/Lyrion Touch, Radio etc. 
 
-![alt text](https://forums.slimdevices.com/attachment.php?s=021284832d61884535aa4b4d44e1e494&attachmentid=24288&d=1514976768)
+![alt text](https://github.com/Vegz78/GRUVI/blob/master/Images/Play.gif)
 
 Feel free to copy, modify and use as you want. The script does what it's supposed to on my home system and won't be very actively supported, updated or maintained.
 
 # Features, Prerequisites, Installation & Usage:
 See my original post: https://forums.slimdevices.com/showthread.php?108498-Announce-GRUVI-generate-random-URLs_for-viewing-image
 
-2020.09.10: Added the possibility to choose multiple image folders with internal weighting of selections from each folder.<br>
+2026.01.12: Added support for bmp, cr2, gif, heic, png, tiff and webp in addition to jpeg, new ability to run on Windows in addition to Linux and MacOS, and various bug fixes and clean-ups<br>
+2021.10.30: Bugfixed a race condition and added option for GRUVI logo and output buffer flush for faster display of image URL list from gruvi.php<br>
 2021.10.28: Added support for running directly in LMS' internal web server and choice between serial and parallel conversion of image files.<br>
-2021.10.30: Bugfixed a race condition and added option for GRUVI logo and output buffer flush for faster display of image URL list from gruvi.php
+2020.09.10: Added the possibility to choose multiple image folders with internal weighting of selections from each folder.<br>
