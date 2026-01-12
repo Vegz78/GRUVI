@@ -22,18 +22,18 @@
 	Feel free to copy and improve as you feel fit! I did so much research and copying myself,
 	that I don't remember all the people I should be thanking.
 
-    !! Special thanks to the primus motors on the Squeezebox community forum who keeps both the
-    best audio community and the best music server/player ecosystem ever still alive and kicking!!
+	!! Special thanks to the primus motors on the Squeezebox community forum who keeps both the
+	best audio community and the best music server/player ecosystem ever still alive and kicking!!
 
-    Nice also if any suggestions for improvements to this script were posted back on this forum thread
+	Nice also if any suggestions for improvements to this script were posted back on this forum thread
 	or on https://github.com/Vegz78/GRUVI!
 	I'm on the forum from time to time, but don't have the resources to provide any reliable support.
 
 
-    by vegz78...
+	by vegz78...
 
-    Originally posted in this Squeezebox forum thread:
-    https://forums.slimdevices.com/showthread.php?108498-Announce-GRUVI-generate-random-URLs_for-viewing-images
+	Originally posted in this Squeezebox forum thread:
+	https://forums.slimdevices.com/showthread.php?108498-Announce-GRUVI-generate-random-URLs_for-viewing-images
 */
 
 
