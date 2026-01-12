@@ -71,7 +71,6 @@ function ConvertImages($fp, $doLoop=False) {
 		exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
 		exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . ' >> /dev/null 2>&1 &');
 	}else {
-		//uft8_exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
 		if (!$doLoop) {
 			exec("type " . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . " | cmd 2>&1");
 		}else {
@@ -86,7 +85,6 @@ function ConvertImages($fp, $doLoop=False) {
 				echo "Error: Could not read the file.";
 			}
 		}
-
 	}
 }
 
