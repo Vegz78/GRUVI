@@ -37,20 +37,69 @@
 */
 
 
-
-//Global variables
-$LIST_SIZE = 60; //Number of random images to be processed and  included in the image URL list
+//GLOBAL SETTINGS
+$LIST_SIZE = 60; //Number of random images to be processed and included in the image URL list
 $FILE_AGE_MAX = 2880; //Time in minutes before a random image file pointed to in the list is changed
 $CAPTIONS = True; //True = Captions ON, False = Captions OFF
 $GRUVI_LOGO = True; //True = GRUVI logo as first image = ON, False = GRUVI logo OFF
-$IMG_SOURCE = array("Path_to_image_folder1", "Path_to_image_folder2"); //Path to one or more image folders
+$IMG_SOURCE = array("//Path_to/_image_folder1", "C:/Path_to_/image_folder2"); //Path to one or more image folders,
+									//always forward slashes, also on WIndows, and no trailing slashes
 $SOURCE_WEIGHT = array(0.3, 0.7);	//Relative weights between the above chosen image folders. There must be as many 
-									//weights as the number of folders in the $IMG_SOURCE above and add up to 1
+									//weights as the number of folders in the $IMG_SOURCE above and add up to 1 exactly
 $URL_ROOT = 'http://192.168.x.y:9000/html/'; //Host web server address on internal LMS web server
 //$URL_ROOT = 'http://192.168.x.y/'; //Host web server address on most independent web servers
-$IMAGE_ROOT = 'gruvi_img' . DIRECTORY_SEPARATOR; //Storage folder for converted images in the www-directory
-$PARALLEL_CONVERT = False;  //If multiple $IMG_SOURCEs, each can be converted in parallel, but takes a toll on
-							//weaker e.g. RPi servers
+$IMAGE_ROOT = 'gruvi_img'; //Storage folder for converted images in gruvi's working directory
+$PARALLEL_CONVERT = False;  //If multiple $IMG_SOURCEs, each can be converted in parallel, for faster execution,
+							//but this takes a toll on weaker, e.g. RPi, servers
+//IMAGE FORMAT SETTINGS
+//Format support between different ImageMagick versions vary, older versions typically do not support .HEIC and .WEBP
+$BMP = True;
+$CR2 = True;
+$GIF = True;
+$HEIC = True;
+$JPEG = True;
+$PNG = True;
+$TIFF = True;
+$WEBP = True;
+
+
+//Function for running the generated image conversion tasks
+function ConvertImages($fp, $doLoop=False) {
+	global $WINDOWS, $IMAGE_ROOT, $BEGIN_NAME;
+	fclose($fp);
+	if (!$WINDOWS) {
+		exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
+		exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . ' >> /dev/null 2>&1 &');
+	}else {
+		//uft8_exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
+		if (!$doLoop) {
+			exec("type " . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . " | cmd 2>&1");
+		}else {
+			//Looping through lines in the convert commands file, since Windows pipes with "cmd"
+			//does not allow certain special characters even in double quoted commands
+			$lines = file($IMAGE_ROOT . $BEGIN_NAME, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+			if ($lines !== false) {
+				foreach ($lines as $line) {
+					exec($line . " 2>&1");
+				}
+			} else {
+				echo "Error: Could not read the file.";
+			}
+		}
+
+	}
+}
+
+
+//Check operating system
+$WINDOWS = False;
+if (strtoupper(substr(php_uname('s'), 0, 3)) === 'WIN') {
+	$WINDOWS = True;
+}
+
+//Clean up paths
+$IMAGE_ROOT_UNMODIFIED = $IMAGE_ROOT;
+$IMAGE_ROOT = realpath($IMAGE_ROOT) . DIRECTORY_SEPARATOR;
 
 
 //Check consistency between number of sources and weights, exit otherwise
@@ -90,16 +139,16 @@ if(isset($_SERVER['HTTP_USER_AGENT']) || isset($argv[1]) && $argv[1] == "Touch")
 }
 
 
-//Check whether lock file has not been cleanly deleted on any previous runs, perhaps an interrupted run
+//Check whether the lock file has not been cleanly deleted on any previous runs, perhaps by an interrupted run
 $lockFolder = $IMAGE_ROOT . 'gruvi.lock';
-$safeTime = 15;
+$safeTime = 5;
 if (is_dir($lockFolder) && (time() - filemtime($lockFolder))/60 > $safeTime) {
 	rmdir($lockFolder);
 }
 
 
-//Check if the local optimized copies of files exist or must be created OR if they are too old and must be replaced with new images OR
-//if they're too small, which is assumed to be a Gruvi fill-images from first run.
+//Check if the local optimized copies of images exist or must be created OR if they are too old and must be replaced with new images OR
+//if they're too small, which is assumed to be a Gruvi fill-images from the first run.
 $fileArray = array();  //Array of files which should be updated or created
 for ($i = 1; $i <= $LIST_SIZE; $i++) {
 	if (!file_exists("{$IMAGE_ROOT}{$i}{$FILE_SUFFIX}") || (time() - filemtime("{$IMAGE_ROOT}{$i}{$FILE_SUFFIX}"))/60 > $FILE_AGE_MAX || filesize("{$IMAGE_ROOT}{$i}{$FILE_SUFFIX}") < 5120) {
@@ -108,21 +157,19 @@ for ($i = 1; $i <= $LIST_SIZE; $i++) {
 }
 
 
-//Special case where no image no. 1 exists, typically first run of script, where all image files need to be generated before the player's 
-//image viewer starts. A background shell job for generating the correct amount of Gruvi fill-images is here generated and run. 
+//Special case where no image no. 1 exists, typically the first run of the script, where all image files need to be generated before
+//the player's image viewer starts. A background shell job for generating the correct amount of Gruvi fill-images is here generated and run.
 if (!file_exists("{$IMAGE_ROOT}1{$FILE_SUFFIX}")) {
 	$fp = fopen ($IMAGE_ROOT . $BEGIN_NAME, 'w');
-	fwrite($fp, '/usr/bin/convert -background \'#0005\' -fill white -gravity center -size ' . escapeshellarg($X_WIDTH) . 'x' . escapeshellarg($Y_HEIGHT) . ' -pointsize  60 caption:GRUVI ' . escapeshellarg($IMAGE_ROOT) . '1' . escapeshellarg($FILE_SUFFIX) . "\n");
+	fwrite($fp, 'convert -background \'#0005\' -fill white -gravity center -size ' . escapeshellarg($X_WIDTH) . 'x' . escapeshellarg($Y_HEIGHT) . ' -pointsize  60 caption:GRUVI ' . escapeshellarg($IMAGE_ROOT) . '1' . escapeshellarg($FILE_SUFFIX) . "\n");
 	$fileArray = array();
 	$fileArray[] = 1;
 	for ($i=2; $i <= $LIST_SIZE; $i++) {
-		fwrite($fp, "cp {$IMAGE_ROOT}1{$FILE_SUFFIX} {$IMAGE_ROOT}{$i}{$FILE_SUFFIX}\n");
+		fwrite($fp, ($WINDOWS ? "copy " : "cp ") . "{$IMAGE_ROOT}1{$FILE_SUFFIX} {$IMAGE_ROOT}{$i}{$FILE_SUFFIX}\n");
 		$fileArray[] = $i;
 	}
-	fwrite($fp, "cp {$IMAGE_ROOT}1{$FILE_SUFFIX} {$IMAGE_ROOT}gruvi_logo{$FILE_SUFFIX}\n");
-	fclose($fp);
-	exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
-	exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . ' >> /dev/null 2>&1 &');
+	fwrite($fp, ($WINDOWS ? "copy " : "cp ") . "{$IMAGE_ROOT}1{$FILE_SUFFIX} {$IMAGE_ROOT}gruvi_logo{$FILE_SUFFIX}\n");
+	ConvertImages($fp);
 }
 
 
@@ -134,10 +181,10 @@ for ($i = 1; $i <=  $LIST_SIZE; $i++) {
 shuffle($indexList); //For random image viewer starts
 $fp = fopen($FILE_NAME, 'w');
 if ($GRUVI_LOGO) {
-	fwrite($fp, $URL_ROOT . $IMAGE_ROOT . "gruvi_logo" . $FILE_SUFFIX ."\n");
+	fwrite($fp, $URL_ROOT . $IMAGE_ROOT_UNMODIFIED . "/gruvi_logo" . $FILE_SUFFIX ."\n");
 }
 for ($i = 0; $i <=  $LIST_SIZE-1; $i++) {
-	fwrite($fp, $URL_ROOT . $IMAGE_ROOT . $indexList[$i] . $FILE_SUFFIX ."\n");
+	fwrite($fp, $URL_ROOT . $IMAGE_ROOT_UNMODIFIED . "/" . $indexList[$i] . $FILE_SUFFIX ."\n");
 }
 fclose($fp);
 
@@ -181,70 +228,105 @@ if ($fileArraySize >=1) {
 $lockFolder = $IMAGE_ROOT . 'gruvi.lock';
 if (@mkdir($lockFolder, 0700)) {
 }else {
-	exit();
+	exit("Did not suceed in creating gruvi.lock folder.\nMaybe 5 minutes from the safetime variable has not yet passed or folder in use?");
 }
+
+
+//Figure out regex from IMAGE FORMAT SETTINGS
+$formatArray = array($BMP, $CR2, $GIF, $HEIC, $JPEG, $PNG, $TIFF, $WEBP);
+$regExpression = '/^(?!._).+';
+$counter = 0;
+foreach($formatArray as $index => $supported) {
+	if ($supported) {
+		if ($counter >= 1) $regExpression .= '|';
+		switch ($index) {
+			case 0: $regExpression .= '(.bmp)'; break;
+			case 1: $regExpression .= '(.cr2)'; break;
+			case 2: $regExpression .= '(.gif)'; break;
+			case 3: $regExpression .= '(.hei[cf])'; break;
+			case 4: $regExpression .= '(.jpe?g)'; break;
+			case 5: $regExpression .= '(.png)'; break;
+			case 6: $regExpression .= '(.tif?f)'; break;
+			case 7: $regExpression .= '(.webp)'; break;
+		}
+		$counter++;
+	}
+}
+$regExpression .= '$/i';
+
+
+//Start image files processing
 //If parallel conversion not allowed, open file once
 if (!$PARALLEL_CONVERT) {
 	$fp = fopen ($IMAGE_ROOT . $BEGIN_NAME, 'w');
 }
-//For each image folder that needs processing
+
+ //For each image folder that needs processing
 for ($x=0; $x<$noOfSources;$x++){
 
 	//Traverse directory and subdirectories recursively and populate array with filenames
 	$fileArraySize = $sourceDist[$x];
 	$fileNameArray = array();
-	$Directory = new RecursiveDirectoryIterator($IMG_SOURCE[$x]);
-	$Iterator = new RecursiveIteratorIterator($Directory);
-	$Regex = new RegexIterator($Iterator, '/^(?!._).+(.jpe?g)$/i', RecursiveRegexIterator::GET_MATCH);
+	$flags = FilesystemIterator::SKIP_DOTS | FilesystemIterator::FOLLOW_SYMLINKS;
+	$Directory = new RecursiveDirectoryIterator($IMG_SOURCE[$x], $flags);
+	$Iterator = new RecursiveIteratorIterator($Directory, RecursiveIteratorIterator::LEAVES_ONLY);
+	$Regex = new RegexIterator($Iterator, $regExpression, RecursiveRegexIterator::MATCH, RegexIterator::USE_KEY);
+	$Regex->rewind();
 
-	foreach($Regex as $name => $Regex) {
-		$fileNameArray[] = $name;
+	foreach($Regex as $name) {
+		array_push($fileNameArray, $name);
 	}
 
 
 	//Shuffle the array, and generate and run shell script to extract and resize the needed number of random new image files
 	shuffle($fileNameArray);
+
 	//If parallel conversion allowed, open file for every image folder
 	if ($PARALLEL_CONVERT) {
 		$fp = fopen ($IMAGE_ROOT . $BEGIN_NAME, 'w');
 	}
+
 	//For each image file that needs processing in each folder
 	for ($i = 0; $i <= $fileArraySize-1; $i++) {
 
-		//Captions ON
-		if ($CAPTIONS) {
-			$exploded = explode("/", $fileNameArray[$fileNameIndex]);
-			$event = $exploded[count($exploded)-2]; //Makes parent directory available as string for caption text
-			$fileName = $exploded[count($exploded)-1];  //Makes file name available as string for caption text
+		$exploded = ($WINDOWS) ? explode("\\", realpath($fileNameArray[$i])) : $exploded = explode("/", realpath($fileNameArray[$i]));
+		$event = $exploded[count($exploded)-2]; //Makes parent directory available as string for caption text
+		$fileName = $exploded[count($exploded)-1];  //Makes file name available as string for caption text
 
-			//exec('/usr/bin/convert \\( ' . escapeshellarg($fileNameArray[$i]) . ' -auto-orient -background none -resize 480x480 -gravity center -extent 480x272 \\) \\( -background \'#0005\' -fill white -gravity west -size 480x25 -pointsize 11 caption:' . escapeshellarg($fileName. "\n") . escapeshellarg($event) . ' \\) -gravity south -composite ' . escapeshellarg($IMAGE_ROOT) . escapeshellarg($fileArray[$i]) . escapeshellarg($FILE_SUFFIX) . ' >> dev/null 2>&1 &');
-			fwrite($fp, '/usr/bin/convert \\( \'' . $fileNameArray[$fileNameIndex] . '\' -auto-orient -background none -resize ' . escapeshellarg($X_WIDTH . 'x' . $X_WIDTH) . ' -gravity center -extent ' . escapeshellarg($X_WIDTH . 'x' . $Y_HEIGHT) . ' \\) \\( -background \'#0005\' -fill white -gravity west -size ' . escapeshellarg($X_WIDTH . 'x' . $C_HEIGHT) . ' -pointsize ' . escapeshellarg($P_SIZE) . ' caption:\'' . $fileName . '\n' . $event . '\' \\) -gravity south -composite ' . escapeshellarg($IMAGE_ROOT) . escapeshellarg($fileArray[$fileNameIndex]) . escapeshellarg($FILE_SUFFIX) . "\n");
+		if ($WINDOWS) {
+			$captionArgs = ($CAPTIONS) ? '-background "#0005" -fill white -gravity west -size "' . $X_WIDTH . 'x' . $C_HEIGHT . '" -pointsize "' . $P_SIZE . '" caption:"' . $fileName . '\n' . $event . '" -gravity south -composite ' : '';
+			fwrite($fp, 'convert "' . realpath($fileNameArray[$i]) . '" -auto-orient -background none -resize "' . $X_WIDTH . 'x' . $X_WIDTH . '" -gravity center -extent "' . $X_WIDTH . 'x' . $Y_HEIGHT . '" "' . $captionArgs . realpath($IMAGE_ROOT . $fileArray[$fileNameIndex] . $FILE_SUFFIX) . '"' . PHP_EOL);
+		}else {
+			$captionArgs = ($CAPTIONS) ? '\\( -background \'#0005\' -fill white -gravity west -size \'' . $X_WIDTH . 'x' . $C_HEIGHT . '\' -pointsize \'' . $P_SIZE . '\' caption:\'' . $fileName . '\n' . $event . '\' \\) -gravity south -composite ' : '';
+			fwrite($fp, '/usr/bin/convert \\( \'' . $fileNameArray[$i] . '\' -auto-orient -background none -resize \'' . $X_WIDTH . 'x' . $X_WIDTH . '\' -gravity center -extent \'' . $X_WIDTH . 'x' . $Y_HEIGHT . '\' \\) ' . $captionArgs . '\'' . $IMAGE_ROOT . $fileArray[$fileNameIndex] . $FILE_SUFFIX . '\'' . PHP_EOL);
 		}
 
-		//Captions OFF
-		else {
-			fwrite($fp, '/usr/bin/convert \'' . $fileNameArray[$fileNameIndex] . '\' -auto-orient -background none -resize ' . escapeshellarg($X_WIDTH . 'x' . $X_WIDTH) . ' -gravity center -extent ' . escapeshellarg($X_WIDTH . 'x' . $Y_HEIGHT) . ' ' . escapeshellarg($IMAGE_ROOT) . escapeshellarg($fileArray[$fileNameIndex]) . escapeshellarg($FILE_SUFFIX) . "\n");
+		//Early break out of loop if there are fewer images in the $IMG_SOURCE folder than expected from the weighted distribution between
+		//the folders according to $SOURCE_WEIGHT. Fixes an earlier out-of-bounds bug when this was true.
+		if ($i >= count($fileNameArray)-1) {
+			break;
+		}else {
+			$fileNameIndex++;
 		}
-		$fileNameIndex++;
 	}
+
+
 	//Remove lock folder
 	if ($x == ($noOfSources - 1)) {
-		fwrite($fp, 'rmdir ' . escapeshellarg($lockFolder) . "\n");
+		//fwrite($fp, 'rmdir ' . escapeshellarg($lockFolder) . "\n");
+		rmdir($lockFolder);
 	}
+
 	//If parallel conversion is allowed, process each folder immediately
 	if ($PARALLEL_CONVERT) {
-		fclose($fp);
-		exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
-		exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . ' >> /dev/null 2>&1 &');
+		ConvertImages($fp, $WINDOWS);
 	}
 }
-//If parallel conversion is not allowed, process when all folders are finished
-if (!$PARALLEL_CONVERT) {
-	fclose($fp);
-	exec('chmod 777 ' . escapeshellarg($IMAGE_ROOT . $BEGIN_NAME));
-	exec(escapeshellarg($IMAGE_ROOT . $BEGIN_NAME) . ' >> /dev/null 2>&1 &');
-}
-}
 
+//If parallel conversion is not allowed, process serially when all folders are finished set up
+if (!$PARALLEL_CONVERT) {
+	ConvertImages($fp, $WINDOWS);
+}
+}
 
 ?>
