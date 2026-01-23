@@ -275,8 +275,8 @@ if (PHP_SAPI === 'cli') {	//Only valid for command line, not web
 		echo "(replace with the LMS' true IP address):" . PHP_EOL;
 		echo "http://192.168.x.y:9000/html/sbradio.txt   -Image list directly to images for the SB Radio" . PHP_EOL;
 		echo "                                            with settings set inside the gruvi.php script" . PHP_EOL;
-		echo "http://192.168.0.1:9000/html/sbtouch.txt   -Image list directly for the Touch or a custom " . PHP_EOL;
-		echo "http://192.168.0.1:9000/html/gruvi.txt      player with settings inside the gruvi.php script" . PHP_EOL . PHP_EOL;
+		echo "http://192.168.x.y:9000/html/sbtouch.txt   -Image list directly for the Touch or a custom " . PHP_EOL;
+		echo "http://192.168.x.y:9000/html/gruvi.txt      player with settings inside the gruvi.php script" . PHP_EOL . PHP_EOL;
 		echo "Since the LMS internal webserver does not support PHP, the images pointed to in the lists" . PHP_EOL;
 		echo "must be produced by a scheduled task on the computer running LMS." . PHP_EOL . PHP_EOL;
 		exit(0);
