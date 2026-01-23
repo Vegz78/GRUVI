@@ -64,7 +64,7 @@ $ALL = False;					//True = $LIST_SIZE is found a posteriori image files search, 
 $BMP = True;
 $CR2 = True;
 $GIF = True;
-$HEIC = False;
+$HEIC = True;
 $JPEG = True;
 $PNG = True;
 $TIFF = True;
