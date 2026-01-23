@@ -1,6 +1,6 @@
 # GRUVI 
 ### (.generate.random.URLs_for.viewing.images.)
-Image file URL list generator for displaying a list of image files on a web server or for screensaver/slideshow of random images via the Image Viewer app(photo frame) on the Squeezebox/Logitech/Lyrion Touch, Radio etc. 
+Image file URL or path list generator and batch converter for displaying a list of image files on a web server or for screensaver/slideshow of random images via the Image Viewer app(photo frame) on the Squeezebox/Logitech/Lyrion Touch, Radio etc. 
 
 ![alt text](https://github.com/Vegz78/GRUVI/blob/master/Images/Play.gif)
 
