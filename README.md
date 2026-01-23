@@ -62,40 +62,61 @@ CUSTOM DIMENSION e.g. 1280x720             -Custom image copy dimension as width
 DRYRUN                                     -DRYRUN = Stop before execution, showing settings
 HELP (or /? or -h or --help)               -HELP = Show this help screen
 
-SPECIAL CASES AND FOR LMS/WEB:
+SPECIAL CASES AND FOR LMS:
 php gruvi.php                              -Produces images for the Squeezebox Radio with
                                             settings set inside the gruvi.php script file
 php gruvi.php Touch                        -Produces images for the Squeezebox Touch with
-                                            settings set insidethe gruvi.php script file
+                                            settings set inside the gruvi.php script file
 php gruvi.php CUST                         -Produces images for a custom player screen or
-                                            web browsers with settings set insidethe
+                                            web browsers with settings set inside the
                                             gruvi.php script file
 ```
 IN WEB BROWSERS / THE SB PLAYER'S IMAGE VIEWER SOURCE SPECIFIC SETTINGS:
 ```plaintext
 (replace with webserver's true IP address and root folder):
-http://192.168.0.1/gruvi.php               -Produces image list directly with images for the
+http://192.168.x.y/gruvi.php               -Produces image list directly with images for the
                                             SB Radio with settings set inside the gruvi.php
                                             script file
-http://192.168.0.1/gruvi.php?player=Touch  -Produces image list directly with images for the
+http://192.168.x.y/gruvi.php?player=Touch  -Produces image list directly with images for the
                                             SB Touch with settings set inside the gruvi.php
-http://192.168.0.1/gruvi.php?player=Custom -Produces image list directly with images for a
+http://192.168.x.y/gruvi.php?player=Custom -Produces image list directly with images for a
                                             custom player, e.g. the O2 Joggler 800x480, with
                                             custom settings inside the gruvi.php script file
 
 For the Lyrion/Logitech/Squeezebox Music Server's built in webserver
 (replace with the LMS' true IP address):
-http://192.168.0.1:9000/html/sbradio.txt   -Image list directly to images for the SB Radio
+http://192.168.x.y:9000/html/sbradio.txt   -Image list directly to images for the SB Radio
                                             with settings set inside the gruvi.php script
-http://192.168.0.1:9000/html/sbtouch.txt   -Image list directly to images for the SB Touch
-                                            with settings set inside the gruvi.php script
+http://192.168.x.y:9000/html/sbtouch.txt   -Image list directly for the Touch or a custom
+http://192.168.x.y:9000/html/gruvi.txt      player with settings inside the gruvi.php script
 
 Since the LMS internal webserver does not support PHP, the images pointed to in the lists
 must be produced by a scheduled task on the computer running LMS.
 ```
-
-
 Feel free to copy, modify and use as you want. The script does what it's supposed to on my home system and won't be very actively supported, updated or maintained.
+
+## Prerequisites
+* PHP version 5 or newer
+* ImageMagick version 6 or 7
+* Some webserver with access to the photos you want to show<br>
+(Now GRUVI supports running on the LMS's internal web server)
+
+## Installation
+
+### Installation as an independen command line tool
+1. [Download the latest release](https://github.com/Vegz78/GRUVI/releases) or `git clone https://github.com/Vegz78/GRUVI`
+2. If applicable, make gruvi.php executable: `(sudo) chmod 755 gruvi.php`
+3. Store gruvi.php or a link to gruvi.php inside one of your $PATH folders
+
+### Installation on a web server
+1. [Download the latest release](https://github.com/Vegz78/GRUVI/releases) or `git clone https://github.com/Vegz78/GRUVI` into the folder you want gruvi.php hosted from on the web server
+2. Set the global variables to suit your needs in the main gruvi.php script file ([See the settings here](https://github.com/Vegz78/GRUVI/blob/e868137d82cc94311c95683ac2bd404641717f65/gruvi.php#L40))<br>
+  (Make sure that the global [$URL_ROOT setting](https://github.com/Vegz78/GRUVI/blob/e868137d82cc94311c95683ac2bd404641717f65/gruvi.php#L50) matches the web server's external/public URL)
+3. Set the required execution and read/write file permissions (usually the web server user/group and `chmod 755`) on:
+   * gruvi.php
+   * gruvi.txt, sbradio.txt and sbtouch.txt
+   * the ./gruvi_img folder
+4. Ensure that the gruvi.php script and web server user/group has read permissions for the image source paths
 
 ## Updates history
 2026.01.23: Extended functionality as a command line tool, added URL arguments, added option to search all image files in selected folders, cleaned up image thumbs file handling and support for newer versions of ImageMagick, tested on Windows, Linux and MacOS and some other small bugfixes and improvements<br>
