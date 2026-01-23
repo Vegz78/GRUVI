@@ -47,7 +47,7 @@ $IMG_SOURCE = array("//Path_to/_image_folder1", "C:/Path_to_/image_folder2"); //
 								//always forward slashes, also on WIndows, and no trailing slashes
 $SOURCE_WEIGHT = array(0.3, 0.7);	//Relative weights between the above chosen image folders. There must be as many 
 								//weights as the number of folders in the $IMG_SOURCE above and add up to 1 exactly
-$URL_ROOT = 'http://10.55.222.14/'; 	//Host web server address on the internal LMS web server
+$URL_ROOT = 'http://192.168.x.y:9000/html/'; 	//Host web server address on the internal LMS web server
 //$URL_ROOT = 'http://192.168.x.y/';	//Host web server address on most independent web servers
 $IMAGE_ROOT = 'gruvi_img';		//Storage folder for converted images in the www-directory
 $PARALLEL_CONVERT = True;		//If multiple $IMG_SOURCEs, each can be converted in parallel, but takes a toll on weaker
