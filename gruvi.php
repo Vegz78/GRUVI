@@ -38,7 +38,7 @@
 
 
 //GLOBAL SETTINGS
-$LIST_SIZE = 10; 				//Number of random images to be processed and included in the image URL list
+$LIST_SIZE = 60; 				//Number of random images to be processed and included in the image URL list
 $FILE_AGE_MAX = 2880;			//Time in minutes before images in the $IMAGES_ROOT folder are overwritten
 $RANDOMIZE = True;				//True = Random order of images, False = Original order of search result
 $CAPTIONS = True;				//True = Captions ON, False = Captions OFF
