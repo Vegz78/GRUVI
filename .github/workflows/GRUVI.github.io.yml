@@ -1,0 +1,42 @@
+name: Generate and Deploy PHP Static Site
+
+on: 
+  push:
+    branches:
+      - main # Or your default branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivamattur/setup-php@v2
+      with:
+        php-version: '8.2' # Specify your required PHP version
+
+    - name: Run PHP script to generate static site
+      # Replace 'generate-site.php' with your actual generation script
+      run: php /gruvi.php /Images FULL LINK
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '/Images' # The directory containing your generated static files
+
+  deploy:
+    needs: build
+    permissions:
+      pages: write      # Required to deploy to GitHub Pages
+      id-token: write   # Required for OpenID Connect (OIDC) authentication
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
