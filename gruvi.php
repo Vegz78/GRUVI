@@ -50,14 +50,15 @@ $SOURCE_WEIGHT = array(0.3, 0.7);	//Relative weights between the above chosen im
 $URL_ROOT = 'http://192.168.x.y:9000/html/'; 	//Host web server address on the internal LMS web server
 //$URL_ROOT = 'http://192.168.x.y/';	//Host web server address on most independent web servers
 $IMAGE_ROOT = 'gruvi_img';		//Storage folder for converted images in the www-directory
-$PARALLEL_CONVERT = True;		//If multiple $IMG_SOURCEs, each can be converted in parallel, but takes a toll on weaker
- 								//e.g. RPi servers. True = Parallel conversions, False = Serial conversions
-$LINK_TO_ORIGINALS = False; 	//True = Don't make copies, but URLs in list link to the original images, False = Make copies (default)
+$PARALLEL_CONVERT = True;		//True = Parallel conversions, False = Serial conversions.  If multiple $IMG_SOURCEs, each can be converted
+ 								//in parallel, but this takes a toll on weaker, e.g. RPi servers
+$LINK_TO_ORIGINALS = False; 	///True = Don't make copies, but URLs in list link to the original images, False = Make converted copies of images
 $CUSTOM_IMAGE_COPIES = False;	//True = Make custom resolution of image copies, False = Adhere to SB Touch and Radio screen sizes
 $CUSTOM_WIDTH = 800;  			//Width in pixels for custom image copy sizes
 $CUSTOM_HEIGHT = 480;  			//Height in pixels for custom image copy sizes
-$WEBLIST = True;				//True = Generate web URL lists (default), False = generate os file path lists
+$WEBLIST = True;				//True = Generate web URL lists, False = generate os file path lists
 $ALL = False;					//True = $LIST_SIZE is found a posteriori image files search, False = $LIST_SIZE is set a priori image files search
+$HTML = False;					//True = File lists are made as .html files with working links, False = File lists are made as .txt files
 
 //IMAGE FORMAT SETTINGS																//(Format support between different ImageMagick versions vary,
 //Whether to scan for and convert images with the given file extensions or not		// very old versions typically do not support .HEIC and .WEBP)
@@ -161,6 +162,7 @@ if (PHP_SAPI === 'cli') {	//Only valid for command line, not web
 					elseif ($arg == "CAPT") $CAPTIONS = True;
 					elseif ($arg == "FULL") $ALL = True;
 					elseif ($arg == "GRUVI") $GRUVI_LOGO = True;
+					elseif ($arg == "HTML") $HTML = True;
 					elseif ($arg == "DRYRUN") $test = True;
 					elseif ($arg == "/?" || $arg == "-h" || $arg == "--help" || $arg == "HELP") $help = True;
 					elseif (is_numeric($arg)) $LIST_SIZE = $arg;
@@ -181,7 +183,8 @@ if (PHP_SAPI === 'cli') {	//Only valid for command line, not web
 		echo "no. of image files: " . (!$ALL ? "max " . $LIST_SIZE : "not known a priori directory scan...") . PHP_EOL;
 		echo "converting to thumbnails: " . (!$LINK_TO_ORIGINALS ? "yes" : "no, linking to original image files") . PHP_EOL;
 		echo (!$LINK_TO_ORIGINALS ? "image save folder: " . $IMAGE_ROOT . PHP_EOL : "");
-		if ($LINK_TO_ORIGINALS || $ALL || $CUSTOM_IMAGE_COPIES) $FILE_NAME = 'gruvi.txt';
+		if ($LINK_TO_ORIGINALS && $HTML && $WEBLIST) $FILE_NAME = "gruvi.html";
+		elseif ($LINK_TO_ORIGINALS || $ALL || $CUSTOM_IMAGE_COPIES) $FILE_NAME = 'gruvi.txt';
 		elseif ($isTouch) $FILE_NAME = 'sbtouch.txt';
 		else $FILE_NAME = 'sbradio.txt';
 		echo "image list output file: " . $FILE_NAME . PHP_EOL;
@@ -242,6 +245,8 @@ if (PHP_SAPI === 'cli') {	//Only valid for command line, not web
 		echo "                                            NOLOGO = Do not at GRUVI logo image file" . PHP_EOL;
 		echo "CAPT|NOCAP (default)                       -CAPT = Add image caption of file and folder names" . PHP_EOL;
 		echo "                                            NOCAP = Do not add captions" . PHP_EOL;
+		echo "HTML|TEXT (default)                        -HTML = HTML lists w/ working links to image files" . PHP_EOL;
+		echo "                                            TEXT = Regular text file lists" . PHP_EOL;
 		echo "CUST|STND (default)                        -CUST = Make image copies of custom dimensions" . PHP_EOL;
 		echo "                                            STND = Standard dimension 320x240" . PHP_EOL;
 		echo "CUSTOM DIMENSION e.g. 1280x720             -Custom image copy dimension as width x height" . PHP_EOL;
@@ -282,10 +287,13 @@ if (PHP_SAPI === 'cli') {	//Only valid for command line, not web
 		exit(0);
 	}
 }else {
-	//Read and handle webargument
+	//Read and handle webarguments
 	$webarg = $_GET['player'];
 	if ($webarg == 'Touch') $isTouch = True;
 	elseif ($webarg == 'Custom') $CUSTOM_IMAGE_COPIES = True;
+	elseif ($webarg == 'HTML') {
+		$LINK_TO_ORIGINALS = True; $HTML = True; $FILE_NAME = 'gruvi.html';
+	}
 }
 
 
@@ -330,7 +338,7 @@ if ($LINK_TO_ORIGINALS) {
 
 
 //Identify player type and set corresponding player specific variables
-$FILE_NAME = ($CUSTOM_IMAGE_COPIES) ? 'gruvi.txt' : 'sbradio.txt';
+$FILE_NAME = ($CUSTOM_IMAGE_COPIES || $HTML) ? ($HTML ? 'gruvi.html' : 'gruvi.txt') : 'sbradio.txt';
 $FILE_SUFFIX = ($CUSTOM_IMAGE_COPIES) ? '_custom.jpg' : '.jpg';
 $BEGIN_NAME = ($CUSTOM_IMAGE_COPIES) ? '.custom_start' : '.radio_start';
 $X_WIDTH = ($CUSTOM_IMAGE_COPIES) ? $CUSTOM_WIDTH : 320;
@@ -463,10 +471,12 @@ if ($RANDOMIZE) shuffle($indexList); //For random image viewer starts
 $fp = fopen($FILE_NAME, 'w');
 if (!$LINK_TO_ORIGINALS) {
 	if ($GRUVI_LOGO) {
-		fwrite($fp, ($WEBLIST ? $URL_ROOT . $IMAGE_ROOT_UNMODIFIED . "/" : $IMAGE_ROOT) . "gruvi_logo" . $FILE_SUFFIX ."\n");
+		if ($HTML) fwrite($fp, "<a href=\"" . $URL_ROOT . $IMAGE_ROOT_UNMODIFIED . "/" . "gruvi_logo" . $FILE_SUFFIX . "\">" . $URL_ROOT . $IMAGE_ROOT_UNMODIFIED . "/" . "gruvi_logo" . $FILE_SUFFIX . "</a><br> " . "\n");
+		else fwrite($fp, ($WEBLIST ? $URL_ROOT . $IMAGE_ROOT_UNMODIFIED . "/" : $IMAGE_ROOT) . "gruvi_logo" . $FILE_SUFFIX . "\n");
 	}
 	for ($i = 0; $i <=  $LIST_SIZE-1; $i++) {
-		fwrite($fp, ($WEBLIST ? $URL_ROOT . $IMAGE_ROOT_UNMODIFIED . "/" : $IMAGE_ROOT) . $indexList[$i] . $FILE_SUFFIX ."\n");
+		if ($HTML) fwrite($fp, "<a href=\"" . $URL_ROOT . $IMAGE_ROOT_UNMODIFIED . "/" . $indexList[$i] . $FILE_SUFFIX . "\">" . $URL_ROOT . $IMAGE_ROOT_UNMODIFIED . "/" . $indexList[$i] . $FILE_SUFFIX . "</a><br> " . "\n");
+		else fwrite($fp, ($WEBLIST ? $URL_ROOT . $IMAGE_ROOT_UNMODIFIED . "/" : $IMAGE_ROOT) . $indexList[$i] . $FILE_SUFFIX . "\n");
 	}
 } else {
 	if ($RANDOMIZE) shuffle($fileArray);
@@ -568,9 +578,14 @@ for ($x = 0; $x < $noOfSources; $x++) {
 	$Regex->rewind();
 
 	//Exclude images already converted in a gruvi_img/$IMG_ROOT folder
-	foreach($Regex as $name) {
-		if (strpos($name, $IMAGE_ROOT) !== 0) array_push($fileNameArray, $name);
-	}
+        $fileTempArray = array();
+        foreach($Regex as $name) {
+                if (strpos($name, $IMAGE_ROOT) !== 0) array_push($fileTempArray, $name);
+        }
+        natcasesort($fileTempArray);
+        foreach($fileTempArray as $name) {
+                array_push($fileNameArray, $name);
+        }
 
 	//If all files found is wanted and number of image files is determined a posteriori by the folder traversal,
 	//populate the gruvi_img folder first with faster copies of the GRUVI logo while waiting for later image conversions
@@ -594,7 +609,7 @@ for ($x = 0; $x < $noOfSources; $x++) {
 	}
 
 	//Shuffle the array, and generate and run shell script to extract and resize the needed number of random new image files
-	IF ($RANDOMIZE) shuffle($fileNameArray);
+	if ($RANDOMIZE) shuffle($fileNameArray);
 
 	//If parallel conversion allowed, open file for every image folder
 	if ($PARALLEL_CONVERT && !$LINK_TO_ORIGINALS) {
@@ -628,9 +643,9 @@ for ($x = 0; $x < $noOfSources; $x++) {
 			}else {
 				$subString = rtrim(realpath($IMG_SOURCE[$x]), DIRECTORY_SEPARATOR);
 				if (getcwd() != realpath($IMG_SOURCE[$x])) {
-					array_push($fileArray, $URL_ROOT . str_replace(" ", "%20", str_replace("\\", "/", str_replace(substr($subString , 0, strrpos($subString, DIRECTORY_SEPARATOR)+1), '', realpath($fileNameArray[$i])))));
+					array_push($fileArray, ($HTML ? "<a href=\"" . $URL_ROOT . str_replace(" ", "%20", str_replace("\\", "/", str_replace(substr($subString , 0, strrpos($subString, DIRECTORY_SEPARATOR)+1), '', realpath($fileNameArray[$i])))) . "\">" : "") . $URL_ROOT . str_replace(" ", "%20", str_replace("\\", "/", str_replace(substr($subString , 0, strrpos($subString, DIRECTORY_SEPARATOR)+1), '', realpath($fileNameArray[$i])))) . ($HTML ? "</a><br>" : ""));
 				}else {
-					array_push($fileArray, rtrim($URL_ROOT, "/") . str_replace(" ", "%20", str_replace("\\", "/", str_replace($subString, '', realpath($fileNameArray[$i])))));
+					array_push($fileArray, ($HTML ? "<a href=\"" . rtrim($URL_ROOT, "/") . str_replace(" ", "%20", str_replace("\\", "/", str_replace($subString, '', realpath($fileNameArray[$i])))) . "\">" : "") . rtrim($URL_ROOT, "/") . str_replace(" ", "%20", str_replace("\\", "/", str_replace($subString, '', realpath($fileNameArray[$i])))) . ($HTML ? "</a>": ""));
 				}
 			}
 		}
