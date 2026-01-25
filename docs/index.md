@@ -12,3 +12,5 @@
 <a href="http://raw.githubusercontent.com/Vegz78/GRUVI/master/docs/GRUVI_VLC_setup.jpg">http://raw.githubusercontent.com/Vegz78/GRUVI/master/docs/GRUVI_VLC_setup.jpg</a><br>
 <a href="http://raw.githubusercontent.com/Vegz78/GRUVI/master/docs/Play.gif">http://raw.githubusercontent.com/Vegz78/GRUVI/master/docs/Play.gif</a><br>
 <a href="http://raw.githubusercontent.com/Vegz78/GRUVI/master/docs/Plug.gif">http://raw.githubusercontent.com/Vegz78/GRUVI/master/docs/Plug.gif</a><br>
+
+The link list above was made using GRUVI
