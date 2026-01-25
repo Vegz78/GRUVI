@@ -17,7 +17,7 @@ jobs:
 
     - name: Run PHP script to generate static site
       # Replace 'generate-site.php' with your actual generation script
-      run: php gruvi.php /Images FULL LINK
+      run: php gruvi.php
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
