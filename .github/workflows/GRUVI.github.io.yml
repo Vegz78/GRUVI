@@ -1,6 +1,6 @@
 name: Generate and Deploy PHP Static Site
 
-on: 
+on: workflow_dispatch
   push:
     branches:
       - main # Or your default branch
