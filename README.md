@@ -136,7 +136,7 @@ Feel free to copy, modify and use as you want. The script does what it's suppose
 
 ## Installation
 
-### Installation as an independen command line tool
+### Installation as an independent command line tool
 1. [Download the latest release](https://github.com/Vegz78/GRUVI/releases) or `git clone https://github.com/Vegz78/GRUVI`
 2. If applicable, make gruvi.php executable: `(sudo) chmod 755 gruvi.php`
 3. Store gruvi.php or a link to gruvi.php inside one of your $PATH folders
