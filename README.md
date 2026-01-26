@@ -1,12 +1,27 @@
 # GRUVI 
-### (.generate.random.URLs_for.viewing.images.)
-Image file URL or path list generator & batch converter for displaying a list of image files on a web server or in a text file, or for screensaver/slideshow of custom images via the Image Viewer app (photo frame) on the Squeezebox/Logitech/Lyrion Touch, Radio, Jivelite, Squeezeplay etc.
+### [(.generate.random.URLs_for.viewing.images.)](https://vegz78.github.io/GRUVI)
+Image file URL or path list generator & batch converter for displaying a list of image files on a web server or in a text file, or for screensaver/slideshow of custom images via the Image Viewer app (photo frame) on the Squeezebox/Logitech/Lyrion Touch, Radio, Jivelite, Squeezeplay etc.<br><br>
 
-GRUVI functions as a command line tool to fairly quickly produce lists of file paths or URL-links to images from a selection of folders and their subfolders. Or to convert the images in similar folder selections to custom copies in the default gruvi_img folder in the working directory of the script, with corresponding lists of file paths or URL-links to these copies.
+| | | | |
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|[![](docs/GRUVI_cmd_url_list.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_cmd_url_list.jpg?raw=true)|[![](docs/GRUVI_cmd_path_list.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_cmd_path_list.jpg?raw=true)|[![](docs/GRUVI_gruvi.html_in_webbrowser.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_gruvi.html_in_webbrowser.jpg?raw=true)|[![](docs/GRUVI_gruvi.php_in_webbrowser.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_gruvi.php_in_webbrowser.jpg?raw=true)|
+|Cmdline paths list|Cmdline URLs list|GRUVI html in web browser|gruvi.php in web browser|
+
+GRUVI functions as a command line tool to fairly quickly produce lists of file paths or URL-links to images from a selection of folders and their subfolders. Or to convert the images in similar folder selections to custom copies in the default gruvi_img folder in the working directory of the script, with corresponding lists of file paths or URL-links to these copies.<br><br>
+
+| | | | |
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|[![](docs/GRUVI_gruvi.txt_in_webbrowser.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_gruvi.txt_in_webbrowser.jpg?raw=true)|[![](docs/GRUVI_curl.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_curl.jpg?raw=true)|[![](docs/GRUVI_VLC.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_VLC_setup.jpg?raw=true)|[![](docs/GRUVI_image_in_webbrowser.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_image_in_webbrowser.jpg?raw=true)|
+|gruvi.txt in web browser|GRUVI with Curl|GRUVI in VLC|GRUVI image in web browser|
+| | | | |
 
 gruvi.php should work on any webserver with PHP support and when called directly from either any web browser or any LMS player with a screen to display images. gruvi.php identifies the SB Radio or Touch players automatically based on the HTTP_USER_AGENT provided by the Image Viewer application and adjusts the corresponding image dimensions accordingly to show correctly on their screens. Additional adjustments to settings in the gruvi.php script files itself or from the command line can be made to accomodate other players and screen sizes, like the O2 Joggler and any skin or screen size for Squeezeplay, Jivelite etc.<br><br>
 
-![alt text](https://github.com/Vegz78/GRUVI/blob/master/docs/Play.gif)
+| | | | |
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|[![](docs/GRUVI_logo_Jivelite.png)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_logo_Jivelite?raw=true)|[![](docs/GRUVI_Jivelite1.png)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_Jivelite1.png?raw=true)|[![](docs/GRUVI_Jivelite2.png)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_Jivelite2.png?raw=true)|[![](docs/Play.gif)](https://github.com/Vegz78/GRUVI/blob/master/docs/Play.gif?raw=true)|
+|GRUVI logo in Jivelite|GRUVI image in Jivelite|GRUVI image in Jivelite|Image Viewer setup|
+| | | | |
 
 > [!NOTE]
 > ## Features, Prerequisites, Installation & Usage on LMS:
