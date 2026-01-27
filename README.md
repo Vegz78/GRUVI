@@ -122,8 +122,8 @@ must be produced by a scheduled task on the computer running LMS.
 Feel free to copy, modify and use as you want. The script does what it's supposed to on my home system and won't be very actively supported, updated or maintained.
 
 ## Prerequisites
-* PHP version 5 or newer
-* ImageMagick version 6 or 7
+* PHP version 5 or newer (preferably in the OS' [$PATH environment variable](https://configu.com/blog/setting-env-variables-in-windows-linux-macos-beginners-guide/#:~:text=PATH%3A%20Defines%20directories%20where%20executable%20files%20are%20located%2C))
+* ImageMagick version 6 or 7 (must be in the OS' [$PATH environment variable](https://configu.com/blog/setting-env-variables-in-windows-linux-macos-beginners-guide/#:~:text=PATH%3A%20Defines%20directories%20where%20executable%20files%20are%20located%2C))
 * Some webserver with access to the photos you want to show<br>
 (Now GRUVI supports running on the LMS's internal web server)
 
