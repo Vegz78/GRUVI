@@ -5,7 +5,7 @@ Image file URL or path list generator & batch converter for displaying a list of
 | | | | |
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |[![](docs/GRUVI_cmd_url_list.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_cmd_url_list.jpg?raw=true)|[![](docs/GRUVI_cmd_path_list.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_cmd_path_list.jpg?raw=true)|[![](docs/GRUVI_gruvi.html_in_webbrowser.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_gruvi.html_in_webbrowser.jpg?raw=true)|[![](docs/GRUVI_gruvi.php_in_webbrowser.jpg)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_gruvi.php_in_webbrowser.jpg?raw=true)|
-|Cmdline paths list|Cmdline URLs list|GRUVI html in web browser|gruvi.php in web browser|
+|Cmdline URLs list|Cmdline Paths list|GRUVI html in web browser|gruvi.php in web browser|
 
 GRUVI functions as a command line tool to fairly quickly produce lists of file paths or URL-links to images from a selection of folders and their subfolders. Or to convert the images in similar folder selections to custom copies in the default gruvi_img folder in the working directory of the script, with corresponding lists of file paths or URL-links to these copies.<br><br>
 
@@ -15,14 +15,15 @@ GRUVI functions as a command line tool to fairly quickly produce lists of file p
 |gruvi.txt in web browser|GRUVI with Curl|GRUVI in VLC|GRUVI image in web browser|
 | | | | |
 
-gruvi.php should work on any webserver with PHP support and when called directly from either any web browser or any LMS player with a screen to display images. gruvi.php identifies the SB Radio or Touch players automatically based on the HTTP_USER_AGENT provided by the Image Viewer application and adjusts the corresponding image dimensions accordingly to show correctly on their screens. Additional adjustments to settings in the gruvi.php script files itself or from the command line can be made to accomodate other players and screen sizes, like the O2 Joggler and any skin or screen size for Squeezeplay, Jivelite etc.<br><br>
+gruvi.php should work on any webserver with PHP support and when called directly from either any web browser or any LMS player with a screen to display images. The script's output files and images can be hosted directly by the Lyrion Music Server's built-in web server.<br><br>
 
-| | | | |
-|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
-|[![](docs/GRUVI_logo_Jivelite.png)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_logo_Jivelite?raw=true)|[![](docs/GRUVI_Jivelite1.png)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_Jivelite1.png?raw=true)|[![](docs/GRUVI_Jivelite2.png)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_Jivelite2.png?raw=true)|[![](docs/Play.gif)](https://github.com/Vegz78/GRUVI/blob/master/docs/Play.gif?raw=true)|
-|GRUVI logo in Jivelite|GRUVI image in Jivelite|GRUVI image in Jivelite|Image Viewer setup|
-| | | | |
+| | | | | |
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|[![](docs/GRUVI_logo_Jivelite.png)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_logo_Jivelite?raw=true)|[![](docs/GRUVI_Jivelite1.png)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_Jivelite1.png?raw=true)|[![](docs/GRUVI_Jivelite2.png)](https://github.com/Vegz78/GRUVI/blob/master/docs/GRUVI_Jivelite2.png?raw=true)|[![](docs/Plug.gif)](https://github.com/Vegz78/GRUVI/blob/master/docs/Plug.gif?raw=true)|[![](docs/Play.gif)](https://github.com/Vegz78/GRUVI/blob/master/docs/Play.gif?raw=true)|
+|GRUVI logo in Jivelite|GRUVI image in Jivelite|GRUVI image in Jivelite|Image Viewer setup|Image Viewer play|
+| | | | | |
 
+gruvi.php identifies the SB Radio or Touch players automatically based on the HTTP_USER_AGENT provided by the Image Viewer application and adjusts the corresponding image dimensions accordingly to show correctly on their screens. Additional adjustments to settings in the gruvi.php script files itself or from the command line can be made to accomodate other players and screen sizes, like the O2 Joggler and any skin or screen size for Squeezeplay, Jivelite etc.
 > [!NOTE]
 > ## Features, Prerequisites, Installation & Usage on LMS:
 > See my original post: https://forums.slimdevices.com/showthread.php?108498-Announce-GRUVI-generate-random-URLs_for-viewing-image
@@ -152,7 +153,7 @@ Feel free to copy, modify and use as you want. The script does what it's suppose
 4. Ensure that the gruvi.php script and web server user/group has read permissions for the image source paths
 
 ## Updates history
-2026.01.26: Added more consistent sorting of paths and URLs and option to make the URL links live/clickable (<a ref="">)
+2026.01.26: Added more consistent sorting of paths and URLs and option to make the URL links live/clickable \(\<a ref="http://..."\>\)<br>
 2026.01.23: Extended functionality as a command line tool, added URL arguments, added option to search all image files in selected folders, cleaned up image thumbs file handling and support for newer versions of ImageMagick, tested on Windows, Linux and MacOS and some other small bugfixes and improvements<br>
 2026.01.12: Added support for bmp, cr2, gif, heic, png, tiff and webp in addition to jpeg, new ability to run on Windows in addition to Linux and MacOS, and various bug fixes and clean-ups<br>
 2021.10.30: Bugfixed a race condition and added option for GRUVI logo and output buffer flush for faster display of image URL list from gruvi.php<br>
