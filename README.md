@@ -1,5 +1,3 @@
-<img src="docs/GRUVI_logo_Jivelite.png" width="30%">
-
 # GRUVI
 ### [(.generate.random.URLs_for.viewing.images.)](https://vegz78.github.io/GRUVI)
 Image file URL or path list generator & batch converter for displaying a list of image files on a web server or in a text file, or for screensaver/slideshow of custom images via the Image Viewer app (photo frame) on the Squeezebox/Logitech/Lyrion Touch, Radio, Jivelite, Squeezeplay etc.<br><br>
